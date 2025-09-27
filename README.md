@@ -41,7 +41,7 @@
 ### Docker运行
 
 ## 项目结构
-### 项目模块结构
+### 模块
 ![project_module.png…](https://github.com/wangyi1310/occrq-disk/blob/main/src/pictures/diagram.png)
 
 使用  [gitdiagram](https://gitdiagram.com/) 自动生成。
