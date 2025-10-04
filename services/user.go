@@ -20,14 +20,16 @@ type ActiveUser struct {
 	Uid any
 }
 
-// UserLoginService 管理用户登录的服务
+type UserService struct {
+}
+
 type LoginUser struct {
 	//TODO 细致调整验证规则
 	UserName string `form:"userName" json:"userName" binding:"required"`
 	Password string `form:"Password" json:"Password" binding:"required,min=4,max=64"`
 }
 
-func Login(login *LoginUser) (*models.User, error) {
+func (u *UserService) Login(login *LoginUser) (*models.User, error) {
 	expectedUser, err := models.GetUserByEmail(login.UserName)
 	if err != nil {
 		return nil, err
@@ -39,7 +41,7 @@ func Login(login *LoginUser) (*models.User, error) {
 	return &expectedUser, nil
 
 }
-func Register(r *RegisterUser) serializer.Response {
+func (u *UserService) Register(r *RegisterUser) serializer.Response {
 	options := models.GetSettingByNames("email_active")
 	enableEmailActive := models.IsTrueVal(options["email_active"])
 	user := models.NewUser()
@@ -96,9 +98,9 @@ func Register(r *RegisterUser) serializer.Response {
 	return serializer.Response{Code: 200}
 }
 
-func Activate(u *ActiveUser) serializer.Response {
+func (u *UserService) Activate(a *ActiveUser) serializer.Response {
 	// 查找待激活用户
-	uid := u.Uid
+	uid := a.Uid
 	user, err := models.GetUserByID(uid.(uint))
 	if err != nil {
 		return serializer.Err(serializer.CodeUserNotFound, "User not fount", err)

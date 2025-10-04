@@ -2,9 +2,10 @@ package log
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"sync"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 const (
@@ -108,34 +109,6 @@ func (ll *Logger) Debug(format string, v ...interface{}) {
 	}
 	msg := fmt.Sprintf(format, v...)
 	ll.Println("Debug", msg)
-}
-
-// Print GORM 的 Logger实现
-//func (ll *Logger) Print(v ...interface{}) {
-//	if LevelDebug > ll.level {
-//		return
-//	}
-//	msg := fmt.Sprintf("[SQL] %s", v...)
-//	ll.Println(msg)
-//}
-
-// BuildLogger 构建logger
-func BuildLogger(level string) {
-	intLevel := LevelError
-	switch level {
-	case "error":
-		intLevel = LevelError
-	case "warning":
-		intLevel = LevelWarning
-	case "info":
-		intLevel = LevelInformational
-	case "debug":
-		intLevel = LevelDebug
-	}
-	l := Logger{
-		level: intLevel,
-	}
-	GloablLogger = &l
 }
 
 // Log 返回日志对象

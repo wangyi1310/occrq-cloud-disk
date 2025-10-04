@@ -15,7 +15,9 @@ func UserLogin(c *gin.Context) {
 		c.JSON(200, serializer.Err(serializer.CodeParamErr, "Failed to parse params", err))
 		return
 	}
-	user, err := services.Login(&login)
+
+	service := services.GetService[*services.UserService]("user")
+	user, err := service.Login(&login)
 	if err != nil {
 		c.JSON(200, serializer.Err(serializer.CodeCredentialInvalid, "Wrong email or password", err))
 		return
@@ -42,13 +44,17 @@ func UserRegister(c *gin.Context) {
 		c.JSON(200, serializer.Err(serializer.CodeParamErr, "Failed to parse params", err))
 		return
 	}
-	res = services.Register(&register)
+	// 调用服务层注册方法
+	service := services.GetService[*services.UserService]("user")
+	res = service.Register(&register)
 	c.JSON(200, res)
 }
 
 func UserActive(c *gin.Context) {
 	uid, _ := c.Get("object_id")
-	res := services.Activate(&services.ActiveUser{
+	// 调用服务层激活方法
+	service := services.GetService[*services.UserService]("user")
+	res := service.Activate(&services.ActiveUser{
 		Uid: uid,
 	})
 	c.JSON(200, res)

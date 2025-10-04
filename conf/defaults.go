@@ -10,16 +10,19 @@ var RedisConfig = &redis{
 
 // DatabaseConfig 数据库配置
 var DatabaseConfig = &database{
-	Type:       "UNSET",
+	Type:       "mysql",
 	Charset:    "utf8",
-	DBFile:     "cloudreve.db",
 	Port:       3306,
+	Host:       "192.168.1.27",
+	User:       "root",
+	Password:   "root_password",
 	UnixSocket: false,
+	Name:       "my_db",
 }
 
 // SystemConfig 系统公用配置
 var SystemConfig = &system{
-	Debug:       false,
+	Debug:       true,
 	Mode:        "master",
 	Listen:      ":5212",
 	ProxyHeader: "X-Forwarded-For",

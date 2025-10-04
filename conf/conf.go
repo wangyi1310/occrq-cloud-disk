@@ -28,6 +28,7 @@ type system struct {
 	Debug         bool
 	SessionSecret string
 	HashIDSalt    string
+	UploadDir     string `validate:"required"`
 	GracePeriod   int    `validate:"gte=0"`
 	ProxyHeader   string `validate:"required_with=Listen"`
 }
@@ -54,7 +55,7 @@ type slave struct {
 type redis struct {
 	Network  string
 	Server   string
-	User	 string
+	User     string
 	Password string
 	DB       string
 }

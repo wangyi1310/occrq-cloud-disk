@@ -53,13 +53,6 @@ type UserOption struct {
 	PreferredTheme string `json:"preferred_theme,omitempty"`
 }
 
-// Root 获取用户的根目录
-func (user *User) Root() (*Folder, error) {
-	var folder Folder
-	err := DB.Where("parent_id is NULL AND owner_id = ?", user.ID).First(&folder).Error
-	return &folder, err
-}
-
 // DeductionStorage 减少用户已用容量
 func (user *User) DeductionStorage(size uint64) bool {
 	if size == 0 {
@@ -118,7 +111,7 @@ func (user *User) GetPolicyID(prefer uint) uint {
 // GetUserByID 用ID获取用户
 func GetUserByID(ID interface{}) (User, error) {
 	var user User
-	result := DB.Set("gorm:auto_preload", true).First(&user, ID)
+	result := DB.Set("gorm:auto_preload", true).Where("id", ID).First(&user)
 	return user, result.Error
 }
 
@@ -129,13 +122,6 @@ func GetActiveUserByID(ID interface{}) (User, error) {
 	return user, result.Error
 }
 
-// GetActiveUserByOpenID 用OpenID获取可登录用户
-func GetActiveUserByOpenID(openid string) (User, error) {
-	var user User
-	result := DB.Set("gorm:auto_preload", true).Where("status = ? and open_id = ?", Active, openid).Find(&user)
-	return user, result.Error
-}
-
 // GetUserByEmail 用Email获取用户
 func GetUserByEmail(email string) (User, error) {
 	var user User
@@ -143,11 +129,11 @@ func GetUserByEmail(email string) (User, error) {
 	return user, result.Error
 }
 
-// GetActiveUserByEmail 用Email获取可登录用户
-func GetActiveUserByEmail(email string) (User, error) {
-	var user User
-	result := DB.Set("gorm:auto_preload", true).Where("status = ? and email = ?", Active, email).First(&user)
-	return user, result.Error
+// SerializeOptions 将序列后的Option写入到数据库字段
+func (user *User) SerializeOptions() (err error) {
+	optionsValue, err := json.Marshal(&user.OptionsSerialized)
+	user.Options = string(optionsValue)
+	return err
 }
 
 // NewUser 返回一个新的空 User
@@ -156,41 +142,6 @@ func NewUser() User {
 	return User{
 		OptionsSerialized: options,
 	}
-}
-
-// BeforeSave Save用户前的钩子
-func (user *User) BeforeSave() (err error) {
-	err = user.SerializeOptions()
-	return err
-}
-
-// AfterCreate 创建用户后的钩子
-func (user *User) AfterCreate(tx *gorm.DB) (err error) {
-	// 创建用户的默认根目录
-	defaultFolder := &Folder{
-		Name:    "/",
-		OwnerID: user.ID,
-	}
-	tx.Create(defaultFolder)
-	return err
-}
-
-// AfterFind 找到用户后的钩子
-func (user *User) AfterFind() (err error) {
-	// 解析用户设置到OptionsSerialized
-	if user.Options != "" {
-		err = json.Unmarshal([]byte(user.Options), &user.OptionsSerialized)
-	}
-
-	// 预加载存储策略
-	return err
-}
-
-// SerializeOptions 将序列后的Option写入到数据库字段
-func (user *User) SerializeOptions() (err error) {
-	optionsValue, err := json.Marshal(&user.OptionsSerialized)
-	user.Options = string(optionsValue)
-	return err
 }
 
 // CheckPassword 根据明文校验密码
@@ -244,13 +195,6 @@ func (user *User) SetPassword(password string) error {
 	//存储 Salt 值和摘要， ":"分割
 	user.Password = salt + ":" + string(bs)
 	return nil
-}
-
-// NewAnonymousUser 返回一个匿名用户
-func NewAnonymousUser() *User {
-	user := User{}
-
-	return &user
 }
 
 // IsAnonymous 返回是否为未登录用户
